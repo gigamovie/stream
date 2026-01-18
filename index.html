@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIGA21 - Luxury Streaming Experience</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        
+        :root {
+            --gold-primary: #d4af37;
+            --gold-secondary: #f9e29d;
+            --bg-dark: #0a0a0a;
+        }
+
+        body { background-color: var(--bg-dark); color: #e2e8f0; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
+        
+        /* Gold UI Elements */
+        .gold-text { background: linear-gradient(to right, #bf953f, #fcf6ba, #b38728, #fbf5b7, #aa771c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .gold-border { border-color: #bf953f; }
+        .gold-bg { background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 50%, #aa771c 100%); color: #000; }
+        .glass { background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(191, 149, 63, 0.15); }
+        
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: #000; border-radius: 20px; box-shadow: 0 0 40px rgba(191, 149, 63, 0.15); border: 1px solid rgba(191, 149, 63, 0.3); }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; }
+        
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .genre-btn { white-space: nowrap; transition: all 0.3s; border: 1px solid rgba(191, 149, 63, 0.2); }
+        .genre-btn:hover, .genre-btn.active { background: #bf953f; color: #000; border-color: #fcf6ba; }
+        
+        .card-hover { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border: 1px solid rgba(191, 149, 63, 0.1); }
+        .card-hover:hover { transform: scale(1.05); border-color: #bf953f; box-shadow: 0 10px 30px rgba(191, 149, 63, 0.2); }
+        
+        /* Shimmer Effect */
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        .shimmer { background: linear-gradient(90deg, #bf953f, #fcf6ba, #bf953f); background-size: 200% 100%; animation: shimmer 3s infinite linear; }
+        footer { border-top: 1px solid rgba(191, 149, 63, 0.1); }
+    </style>
+</head>
+<body class="pb-20">
+
+    <nav class="sticky top-0 z-[100] glass px-6 md:px-12 py-4 flex justify-between items-center border-b border-white/5">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
+            <div class="shimmer p-2 rounded-lg rotate-3 shadow-lg shadow-yellow-900/20"><i class="fas fa-bolt text-black"></i></div>
+            <h1 class="text-2xl font-black tracking-tighter uppercase gold-text">GIGA21</h1>
+        </div>
+        
+        <div class="hidden lg:flex gap-6 text-[10px] font-extrabold uppercase tracking-[0.2em] text-gray-400">
+            <button onclick="changeType('movie')" id="nav-movie" class="hover:text-white transition active-link">Movies</button>
+            <button onclick="changeType('tv')" id="nav-tv" class="hover:text-white transition">Series</button>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="relative flex-grow max-w-md">
+                <input id="search-input" type="text" placeholder="Cari Film..." 
+                    class="bg-white/5 border border-white/10 rounded-full py-2 px-4 ms-3 text-xs outline-none focus:border-[#bf953f] w-full text-white">
+                <i onclick="searchAny()" class="fas fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 cursor-pointer hover:text-[#bf953f]"></i>
+            </div>
+            <button class="gold-bg ms-3 px-6 py-2 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-lg shadow-yellow-900/20">Login</button>
+        </div>
+    </nav>
+
+    <main class="max-w-[1600px] mx-auto px-4 md:px-10 mt-8">
+        
+        <section class="mb-12">
+            <div class="grid lg:grid-cols-4 gap-8">
+                <div class="lg:col-span-3">
+                    <div class="video-container">
+                        <iframe id="main-player" src="" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    
+                    <div class="mt-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="flex-grow">
+                            <div class="flex items-center gap-3 mb-2">
+                                <span id="type-badge" class="bg-yellow-900/30 text-[#fcf6ba] text-[9px] font-black px-3 py-1 rounded-full uppercase border border-[#bf953f]/30 tracking-widest">GIGA21 ORIGIN</span>
+                                <span id="rating-badge" class="text-yellow-500 text-xs font-bold"><i class="fas fa-star mr-1"></i> 0.0</span>
+                            </div>
+                            <h2 id="playing-title" class="text-3xl md:text-4xl font-black text-white leading-tight">Mulai Menonton</h2>
+                            <p id="playing-desc" class="text-gray-400 text-sm mt-4 leading-relaxed max-w-3xl line-clamp-2 italic">Silahkan pilih film atau series populer di bawah ini untuk memulai pemutaran.</p>
+                        </div>
+                        
+                        <div class="bg-white/5 p-5 rounded-2xl border border-white/5 shrink-0">
+                            <p class="text-[9px] font-extrabold text-[#bf953f] uppercase tracking-widest mb-4"><i class="fas fa-signal mr-2"></i> Streaming Server</p>
+                            <div id="server-list" class="flex gap-2"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="sidebar-panel" class="glass p-6 rounded-2xl h-full min-h-[500px]">
+                    <div id="episode-header" class="hidden">
+                        <h3 class="font-bold mb-5 flex items-center justify-between border-b border-white/5 pb-4">
+                            <span class="flex items-center gap-2 gold-text tracking-widest text-xs uppercase"><i class="fas fa-list-ul"></i> Episodes List</span>
+                        </h3>
+                        <div class="grid grid-cols-4 gap-2 overflow-y-auto max-h-[450px] no-scrollbar" id="episode-list"></div>
+                    </div>
+                    <div id="side-placeholder" class="h-full flex flex-col items-center justify-center text-center">
+                        <i class="fas fa-crown text-5xl text-gray-800 mb-4"></i>
+                        <p class="text-[10px] text-gray-500 font-extrabold uppercase tracking-[0.2em]">Select Series <br>to unlock episodes</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-10">
+            <div class="flex items-center gap-3 mb-4 overflow-x-auto no-scrollbar pb-2">
+                <span class="text-[9px] font-black gold-text uppercase tracking-widest shrink-0"><i class="fas fa-globe mr-1"></i> Negara:</span>
+                <div id="country-container" class="flex gap-2">
+                </div>
+            </div>
+
+            <div id="genre-container" class="flex gap-3 overflow-x-auto no-scrollbar pb-4">
+                </div>
+        </section>
+
+        <section id="content-section">
+            <div class="flex items-center justify-between mb-8">
+                <h3 id="grid-title" class="text-xl font-black uppercase tracking-widest gold-text">Trending Movies</h3>
+                <div class="flex gap-4 items-center">
+                    <button onclick="prevPage()" class="w-10 h-10 rounded-full border border-white/10 hover:gold-bg hover:text-black transition flex items-center justify-center"><i class="fas fa-chevron-left text-xs"></i></button>
+                    <span id="page-indicator" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Page 1</span>
+                    <button onclick="nextPage()" class="w-10 h-10 rounded-full border border-white/10 hover:gold-bg hover:text-black transition flex items-center justify-center"><i class="fas fa-chevron-right text-xs"></i></button>
+                </div>
+            </div>
+            <div id="main-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6"></div>
+        </section>
+
+    </main>
+
+    <footer class="mt-20 glass py-10 px-6">
+        <div class="max-w-6xl mx-auto grid md:grid-cols-3 gap-10 text-center md:text-left">
+            <div>
+                <h1 class="text-2xl font-black gold-text mb-4 uppercase">GIGA21</h1>
+                <p class="text-xs text-gray-500 leading-relaxed">Portal streaming film dan series kualitas HD gratis. Nikmati ribuan konten premium tanpa biaya berlangganan.</p>
+            </div>
+            <div class="flex flex-col gap-3">
+                <h4 class="text-[10px] font-bold uppercase gold-text tracking-widest">Navigasi</h4>
+                <a href="about.html" class="text-xs text-gray-400 hover:text-white">Tentang Kami</a>
+                <a href="dmca.html" class="text-xs text-gray-400 hover:text-white">DMCA Konten</a>
+                <a href="privasi.html" class="text-xs text-gray-400 hover:text-white">Kebijakan Privasi</a>
+            </div>
+            <div>
+                <h4 class="text-[10px] font-bold uppercase gold-text tracking-widest mb-4">Ikuti Kami</h4>
+                <div class="flex justify-center md:justify-start gap-4">
+                    <a href="https://t.me/username_anda" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-110">
+                        <i class="fab fa-telegram text-xl hover:text-[#bf953f] cursor-pointer"></i>
+                    </a>
+            
+                    <a href="https://instagram.com/username_anda" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-110">
+                        <i class="fab fa-instagram text-xl hover:text-[#bf953f] cursor-pointer"></i>
+                    </a>
+            
+                    <a href="https://twitter.com/username_anda" target="_blank" rel="noopener noreferrer" class="transition-transform hover:scale-110">
+                        <i class="fab fa-twitter text-xl hover:text-[#bf953f] cursor-pointer"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-10 pt-6 border-t border-white/5">
+            <p class="text-[9px] text-gray-600 uppercase tracking-widest">&copy; 2026 GIGA21 Gold. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+<script>
+    const API_KEY = '0ac7d6475232e17859d8e46b5dc9a435';
+    const BASE_URL = 'https://api.themoviedb.org/3';
+    const IMG_URL = 'https://image.tmdb.org/t/p/w500';
+
+    let currentId = '', currentEp = 1, currentType = 'movie', currentServer = 'vidsrc';
+    let currentPage = 1, activeGenre = '', activeCountry = '', watchedEpisodes = [];
+
+    // Daftar negara populer
+    const countries = [
+        { id: '', name: 'Semua' },
+        { id: 'ID', name: 'Indonesia' },
+        { id: 'KR', name: 'Korea' },
+        { id: 'US', name: 'USA' },
+        { id: 'JP', name: 'Jepang' },
+        { id: 'TH', name: 'Thailand' },
+        { id: 'CN', name: 'China' }
+    ];
+
+const serverConfig = [
+            { 
+                id: 'vidsrc', 
+                name: 'SV1 (Ultra)', 
+                url: (id, type, ep) => type === 'movie' ? `https://vidsrc.to/embed/movie/${id}` : `https://vidsrc.to/embed/tv/${id}/1/${ep}?sub_lan=id` 
+            },
+            { 
+                id: 'vidsrc_me', 
+                name: 'SV2 (HD)', 
+                url: (id, type, ep) => type === 'movie' ? `https://vidsrc.me/embed/movie?tmdb=${id}` : `https://vidsrc.me/embed/tv?tmdb=${id}&season=1&episode=${ep}` 
+            },
+            { 
+                id: 'auto', 
+                name: 'SV3 (Fast)', 
+                url: (id, type, ep) => type === 'movie' ? `https://player.autoembed.cc/embed/movie/${id}` : `https://player.autoembed.cc/embed/tv/${id}/1/${ep}` 
+            },
+            { 
+                id: 'superembed', 
+                name: 'SV4 (Multi)', 
+                url: (id, type, ep) => type === 'movie' ? `https://multiembed.mov/?video_id=${id}&tmdb=1` : `https://multiembed.mov/?video_id=${id}&tmdb=1&s=1&e=${ep}` 
+            },
+            { 
+                id: 'embed_su', 
+                name: 'SV5 (VIP)', 
+                url: (id, type, ep) => type === 'movie' ? `https://embed.su/embed/movie/${id}` : `https://embed.su/embed/tv/${id}/1/${ep}` 
+            },
+            { 
+                id: 'vidsrc_cc', 
+                name: 'SV6 (PRO)', 
+                url: (id, type, ep) => type === 'movie' ? `https://vidsrc.cc/v2/embed/movie/${id}` : `https://vidsrc.cc/v2/embed/tv/${id}/1/${ep}` 
+            }
+        ];
+
+    // 1. Render Tombol Negara
+    function renderCountries() {
+        const container = document.getElementById('country-container');
+        container.innerHTML = countries.map(c => `
+            <button onclick="setCountry('${c.id}', '${c.name}')" 
+                class="country-btn px-4 py-1 rounded-md text-[9px] font-bold uppercase border border-white/10 transition-all ${activeCountry === c.id ? 'gold-bg text-black' : 'bg-white/5 text-gray-400'}">
+                ${c.name}
+            </button>
+        `).join('');
+    }
+
+    // 2. Ambil Genre
+    async function fetchGenres() {
+        const res = await fetch(`${BASE_URL}/genre/${currentType}/list?api_key=${API_KEY}`);
+        const data = await res.json();
+        const container = document.getElementById('genre-container');
+        let html = `<button onclick="setGenre('', 'Semua')" class="genre-btn px-6 py-2 rounded-full text-[10px] font-bold uppercase ${activeGenre === '' ? 'active' : ''}">Semua</button>`;
+        html += data.genres.map(g => `<button onclick="setGenre('${g.id}', '${g.name}')" class="genre-btn px-6 py-2 rounded-full text-[10px] font-bold uppercase ${activeGenre == g.id ? 'active' : ''}">${g.name}</button>`).join('');
+        container.innerHTML = html;
+    }
+
+    // 3. Main Fetch (Ditambah filter Country)
+    async function fetchData() {
+        let url = `${BASE_URL}/discover/${currentType}?api_key=${API_KEY}&page=${currentPage}&sort_by=popularity.desc`;
+        if (activeGenre) url += `&with_genres=${activeGenre}`;
+        if (activeCountry) url += `&with_origin_country=${activeCountry}`;
+        
+        const res = await fetch(url);
+        const data = await res.json();
+        renderGrid(data.results);
+        document.getElementById('page-indicator').innerText = `Page ${currentPage}`;
+    }
+
+    // Fungsi Render Grid
+    function renderGrid(data) {
+        const grid = document.getElementById('main-grid');
+        if(data.length === 0) {
+            grid.innerHTML = `<p class="col-span-full text-center py-20 text-gray-500 text-xs uppercase tracking-widest">Tidak ada film ditemukan untuk kriteria ini.</p>`;
+            return;
+        }
+        grid.innerHTML = data.map(item => `
+            <div onclick="loadDetail('${item.id}', '${currentType}')" class="card-hover cursor-pointer rounded-2xl overflow-hidden glass bg-black group relative">
+                <div class="relative aspect-[2/3]">
+                    <img src="${item.poster_path ? IMG_URL + item.poster_path : 'https://via.placeholder.com/500x750?text=No+Poster'}" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-90"></div>
+                    <div class="absolute bottom-3 left-3 right-3">
+                        <h4 class="text-[10px] font-extrabold truncate uppercase text-white tracking-tighter">${item.title || item.name}</h4>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-[8px] text-[#bf953f] font-bold tracking-widest">${(item.release_date || item.first_air_date || 'TBA').split('-')[0]}</span>
+                            <span class="text-[8px] text-yellow-500 font-black">⭐ ${item.vote_average.toFixed(1)}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Set Negara
+    function setCountry(id, name) {
+        activeCountry = id;
+        currentPage = 1;
+        updateHeading(name, 'country');
+        renderCountries();
+        fetchData();
+    }
+
+    // Set Genre
+    function setGenre(id, name) {
+        activeGenre = id;
+        currentPage = 1;
+        updateHeading(name, 'genre');
+        fetchGenres();
+        fetchData();
+    }
+
+    // Update Judul Dinamis
+    function updateHeading(name, mode) {
+        const titleElement = document.getElementById('grid-title');
+        const typeText = currentType === 'movie' ? 'Movies' : 'Series';
+        
+        if (activeGenre === '' && activeCountry === '') {
+            titleElement.innerText = `Trending ${typeText}`;
+        } else {
+            let countryName = countries.find(c => c.id === activeCountry)?.name || '';
+            let genreBtn = document.querySelector(`.genre-btn.active`)?.innerText || '';
+            
+            titleElement.innerText = `${countryName} ${name} ${typeText}`.replace('Semua', '').trim();
+        }
+    }
+
+    // Detail & Player
+    async function loadDetail(id, type) {
+        const res = await fetch(`${BASE_URL}/${type}/${id}?api_key=${API_KEY}`);
+        const data = await res.json();
+        currentId = id; currentEp = 1; watchedEpisodes = [1];
+        document.getElementById('playing-title').innerText = data.title || data.name;
+        document.getElementById('playing-desc').innerText = data.overview || "Tidak ada sinopsis.";
+        document.getElementById('rating-badge').innerHTML = `⭐ ${data.vote_average.toFixed(1)}`;
+        
+        const sideHeader = document.getElementById('episode-header'), sidePlaceholder = document.getElementById('side-placeholder');
+        if(type === 'tv') {
+            sideHeader.classList.remove('hidden'); sidePlaceholder.classList.add('hidden');
+            renderEpisodes(data.seasons[0]?.episode_count || data.number_of_episodes || 1);
+        } else {
+            sideHeader.classList.add('hidden'); sidePlaceholder.classList.remove('hidden');
+        }
+        updatePlayer();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderEpisodes(count) {
+        const container = document.getElementById('episode-list'); container.innerHTML = '';
+        for (let i = 1; i <= count; i++) {
+            const isActive = i === currentEp, isWatched = watchedEpisodes.includes(i);
+            const btn = document.createElement('button');
+            btn.className = `py-3 rounded-lg text-[10px] font-black transition-all border ${isActive ? 'gold-bg border-[#fcf6ba] text-black shadow-lg shadow-yellow-900/30' : isWatched ? 'bg-yellow-900/20 border-yellow-700/30 text-yellow-200' : 'bg-white/5 border-white/5 text-gray-500 hover:text-white'}`;
+            btn.innerText = i === count ? "END" : i;
+            btn.onclick = () => { currentEp = i; if(!watchedEpisodes.includes(i)) watchedEpisodes.push(i); renderEpisodes(count); updatePlayer(); };
+            container.appendChild(btn);
+        }
+    }
+
+function updatePlayer() {
+        const activeServer = serverConfig.find(s => s.id === currentServer);
+        document.getElementById('main-player').src = activeServer.url(currentId, currentType, currentEp);
+        
+        // Versi lebih rapi dengan Grid agar tidak melebar keluar layar
+        document.getElementById('server-list').innerHTML = `
+            <div class="grid grid-cols-3 sm:grid-cols-3 gap-2 w-full">
+                ${serverConfig.map(s => `
+                    <button onclick="currentServer='${s.id}'; updatePlayer()" 
+                        class="px-2 py-2 rounded-lg text-[9px] font-black transition-all border ${currentServer === s.id ? 'gold-bg text-black border-yellow-200' : 'bg-white/5 text-gray-400 border-white/5 hover:border-yellow-600/50'}">
+                        ${s.name}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    function changeType(type) {
+        currentType = type; currentPage = 1; activeGenre = ''; activeCountry = '';
+        document.getElementById('grid-title').innerText = type === 'movie' ? 'Trending Movies' : 'Popular Series';
+        fetchGenres(); renderCountries(); fetchData();
+    }
+
+    function nextPage() { currentPage++; fetchData(); window.scrollTo({top: 500, behavior: 'smooth'}); }
+    function prevPage() { if(currentPage > 1) { currentPage--; fetchData(); window.scrollTo({top: 500, behavior: 'smooth'}); } }
+
+    async function searchAny() {
+        const query = document.getElementById('search-input').value;
+        if(!query) return;
+        const res = await fetch(`${BASE_URL}/search/multi?api_key=${API_KEY}&query=${query}`);
+        const data = await res.json();
+        document.getElementById('grid-title').innerText = `Hasil Cari: ${query}`;
+        renderGrid(data.results.filter(i => i.media_type !== 'person'));
+    }
+
+    // Init
+    renderCountries(); fetchGenres(); fetchData();
+</script>
+</body>
+</html>
