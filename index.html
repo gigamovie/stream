@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GIGA21 Ultra</title>
+    <title>GIGA21 ULTRA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -745,6 +745,9 @@ async function applyFilter(type, id, name) {
 }
 
 async function openPlayer(id, type) {
+    const playerScreen = document.getElementById('player-screen');
+    playerScreen.classList.remove('hidden');
+    playerScreen.scrollTo({ top: 0, behavior: 'smooth' });
     currentPlayingId = id;
     currentPlayingType = type;
     const screen = document.getElementById('player-screen');
@@ -825,15 +828,10 @@ function shareMovie() {
     // Ganti 'giga21.vercel.app' dengan domain asli yang diberikan Vercel
     const shareUrl = `https://giga21.vercel.app/${currentPlayingId}`;
     
-    // 3. Ambil Judul Film untuk teks pesan
-    const movieTitle = document.getElementById('player-title').innerText;
-
     // 4. Logika Berbagi
     if (navigator.share) {
         // Jika dibuka di HP (WhatsApp, Telegram, dll)
         navigator.share({
-            title: 'BURUAN NONTON SEBELUM DIHAPUS !!',
-            text: `FILM: ${movieTitle}. Hanya di GIGA21 Streaming gratis tanpa batas.`,
             url: shareUrl
         }).catch(console.error);
     } else {
