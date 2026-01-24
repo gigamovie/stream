@@ -469,30 +469,50 @@ function viewAllAdult() {
     window.location.href = 'index.html';
 }
 
-function renderRecommendations() {
+async function renderRecommendations() {
     const grid = document.getElementById('recom-grid');
     if (!grid) return;
-    grid.innerHTML = '';
+    
+    // 1. Tampilkan loading skeleton atau kosongkan dulu
+    grid.innerHTML = '<div class="col-span-3 text-center py-4 opacity-50 text-[10px]">MEMUAT REKOMENDASI...</div>';
 
-    // Ambil 9 ID acak dari list adultMovies
-    const shuffled = [...adultMovies].sort(() => 0.5 - Math.random()).slice(0, 9);
+    // 2. Ambil 9 ID acak
+    const shuffledIds = [...adultMovies].sort(() => 0.5 - Math.random()).slice(0, 9);
 
-    shuffled.forEach(id => {
-        fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}`)
-            .then(res => res.json())
-            .then(movie => {
-                if(!movie.poster_path) return;
-                grid.innerHTML += `
-                    <div onclick="openPlayer('${movie.id}', 'movie')" class="relative aspect-[2/3] rounded-lg overflow-hidden border border-white/5 cursor-pointer group shadow-lg">
-                        <img src="${IMG_URL + movie.poster_path}" class="w-full h-full object-cover transition duration-500 group-hover:scale-110 blur-[1px] hover:blur-0">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-80"></div>
-                        <div class="absolute bottom-1 left-1 right-1">
-                            <p class="text-[7px] text-white font-bold truncate uppercase tracking-tighter">${movie.title}</p>
-                        </div>
+    try {
+        // 3. Ambil SEMUA data film sekaligus (Parallel Fetching)
+        const moviePromises = shuffledIds.map(id => 
+            fetch(`${BASE_URL}/movie/${id}?api_key=${API_KEY}`).then(res => res.json())
+        );
+
+        const movies = await Promise.all(moviePromises);
+
+        // 4. Gabungkan semua HTML jadi satu string (Lebih cepat daripada innerHTML += berkali-kali)
+        const htmlContent = movies.map(movie => {
+            if (!movie.poster_path) return '';
+            
+            return `
+                <div onclick="openPlayer('${movie.id}', 'movie')" class="relative aspect-[2/3] rounded-lg overflow-hidden border border-white/5 cursor-pointer group shadow-lg bg-white/5">
+                    <img src="${IMG_URL + movie.poster_path}" 
+                         loading="lazy"
+                         class="w-full h-full object-cover transition duration-500 group-hover:scale-110">
+                    
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent opacity-90"></div>
+                    
+                    <div class="absolute bottom-1.5 left-2 right-2">
+                        <p class="text-[8px] text-white font-black truncate uppercase tracking-tighter leading-none">${movie.title}</p>
                     </div>
-                `;
-            });
-    });
+                </div>
+            `;
+        }).join('');
+
+        // 5. Tampilkan ke grid sekaligus
+        grid.innerHTML = htmlContent;
+
+    } catch (error) {
+        console.error("Gagal memuat rekomendasi:", error);
+        grid.innerHTML = '';
+    }
 }
 
 // --- SMART OPEN PLAYER (TENTANG IKLAN HERO) ---
