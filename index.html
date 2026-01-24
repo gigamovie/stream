@@ -795,19 +795,31 @@ function closePlayer() {
 }
 
 function shareMovie() {
-    if (!currentPlayingId) return; // Mencegah share jika data belum ada
+    // 1. Pastikan ID film tersedia
+    if (!currentPlayingId) {
+        alert("Pilih film terlebih dahulu!");
+        return;
+    }
 
-    const shareUrl = `${window.location.origin}${window.location.pathname}?id=${currentPlayingId}&type=${currentPlayingType}`;
+    // 2. Buat Link Tautan mengarah ke Vercel kamu
+    // Ganti 'giga21.vercel.app' dengan domain asli yang diberikan Vercel
+    const shareUrl = `https://giga21.vercel.app/${currentPlayingId}`;
+    
+    // 3. Ambil Judul Film untuk teks pesan
+    const movieTitle = document.getElementById('player-title').innerText;
 
+    // 4. Logika Berbagi
     if (navigator.share) {
+        // Jika dibuka di HP (WhatsApp, Telegram, dll)
         navigator.share({
-            title: document.getElementById('player-title').innerText,
-            text: 'Nonton film ini di GIGA21!',
+            title: 'BURUAN NONTON SEBELUM DIHAPUS !!',
+            text: `FILM: ${movieTitle}. Hanya di GIGA21 Streaming gratis tanpa batas.`,
             url: shareUrl
-        });
+        }).catch(console.error);
     } else {
+        // Jika dibuka di Laptop (Copy to Clipboard)
         navigator.clipboard.writeText(shareUrl);
-        alert("Link berhasil disalin! Bagikan ke temanmu.");
+        alert("Link cantik berhasil disalin! Silakan bagikan.");
     }
 }
 
